@@ -1,0 +1,72 @@
+services:
+  db:
+    image: mariadb:10.6-focal  # Uses a multi-architecture compatible MariaDB image
+    container_name: wordpress_db
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    x-tinkr:
+      cpu: 512
+      memory: 512
+      environment:
+        - MYSQL_ROOT_PASSWORD=somewordpress
+        - MYSQL_DATABASE=wordpress
+        - MYSQL_USER=wordpress
+        - MYSQL_PASSWORD=wordpress
+      network:
+        public: false  # Indicates this service is accessible in private subnets
+      ports:
+        db-3306:
+          port: 3306
+          protocol: tcp
+          public: false
+    environment:
+      - MYSQL_ROOT_PASSWORD=somewordpress
+      - MYSQL_DATABASE=wordpress
+      - MYSQL_USER=wordpress
+      - MYSQL_PASSWORD=wordpress
+    expose:
+      - 3306
+    networks:
+      - wordpress_network
+
+  wordpress:
+    image: wordpress:latest
+    container_name: wordpress_app
+    volumes:
+      - wp_data:/var/www/html
+    ports:
+      - 80:80  
+    restart: always
+    x-tinkr:
+      cpu: 512
+      memory: 512
+      environment:
+        - WORDPRESS_DB_HOST=<hostname:db-3306>
+      network:
+        public: true  # Indicates this service is accessible in public subnets
+      ports:
+        wordpress-80:
+          port: 80
+          protocol: http
+          public: true
+          healthcheck:
+            timeout: 10
+            interval: 120
+            path: /
+            retries: 3
+    environment:
+      - WORDPRESS_DB_HOST=db:3306
+      - WORDPRESS_DB_USER=wordpress
+      - WORDPRESS_DB_PASSWORD=wordpress
+      - WORDPRESS_DB_NAME=wordpress
+    networks:
+      - wordpress_network
+
+networks:
+  wordpress_network:
+    driver: bridge
+
+volumes:
+  db_data:
+  wp_data:
