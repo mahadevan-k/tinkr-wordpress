@@ -55,6 +55,7 @@ services:
             interval: 120
             path: /
             retries: 3
+            success_code: 200-399
     environment:
       - WORDPRESS_DB_HOST=db:3306
       - WORDPRESS_DB_USER=wordpress
