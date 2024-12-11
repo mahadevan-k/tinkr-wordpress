@@ -54,7 +54,7 @@ services:
           public: true
           healthcheck:
             timeout: 10
-            interval: 120
+            interval: 30
             path: /
             retries: 3
             success_code: 200-399
