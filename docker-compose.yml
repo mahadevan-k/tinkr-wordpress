@@ -41,6 +41,8 @@ services:
     x-tinkr:
       cpu: 512
       memory: 512
+      depends_on:
+        - db
       environment:
         - WORDPRESS_DB_HOST=<hostname:db-3306>
       network:
