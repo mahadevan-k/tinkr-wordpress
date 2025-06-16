@@ -5,10 +5,28 @@ services:
     volumes:
       - wp_data:/var/www/html
     ports:
-      - 80:81 
+      - 80:80
     depends_on:
       - db
     restart: always
+    x-tinkr:
+      cpu: 512
+      memory: 512
+      environment:
+        - WORDPRESS_DB_HOST=<hostname:db-3306>
+      network:
+        public: true  # Indicates this service is accessible in public subnets
+      ports:
+        wordpress-80:
+          port: 80
+          protocol: http
+          public: true
+          healthcheck:
+            timeout: 10
+            interval: 30
+            path: /
+            retries: 3
+            success_code: 200-399
     environment:
       - WORDPRESS_DB_HOST=db:3306
       - WORDPRESS_DB_USER=wordpress
@@ -16,13 +34,22 @@ services:
       - WORDPRESS_DB_NAME=wordpress
     networks:
       - wordpress_network
-      
   db:
     image: mariadb:10.6-focal  # Uses a multi-architecture compatible MariaDB image
     container_name: wordpress_db
     volumes:
       - db_data:/var/lib/mysql
     restart: always
+    x-tinkr:
+      cpu: 512
+      memory: 512
+      network:
+        public: false  # Indicates this service is accessible in private subnets
+      ports:
+        db-3306:
+          port: 3306
+          protocol: tcp
+          public: false
     environment:
       - MYSQL_ROOT_PASSWORD=somewordpress
       - MYSQL_DATABASE=wordpress
